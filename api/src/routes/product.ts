@@ -112,6 +112,11 @@ export const resetProducts = () => {
   products = [...seedProducts];
 };
 
+const isLowStock = (p: Product): boolean =>
+  p.stockLevel !== undefined &&
+  p.reorderThreshold !== undefined &&
+  p.stockLevel < p.reorderThreshold;
+
 /**
  * Validates the stock-related fields of a product body.
  * Returns an error message string if invalid, or null if valid.
@@ -156,12 +161,7 @@ router.get('/', (req, res) => {
 
 // Get products with stock below their reorder threshold
 router.get('/low-stock', (req, res) => {
-  const lowStock = products.filter(
-    p =>
-      p.stockLevel !== undefined &&
-      p.reorderThreshold !== undefined &&
-      p.stockLevel < p.reorderThreshold
-  );
+  const lowStock = products.filter(isLowStock);
   res.json(lowStock);
 });
 
@@ -189,11 +189,8 @@ router.put('/:id', (req, res) => {
   }
   products[index] = req.body;
   const updated = products[index];
-  const isLowStock =
-    updated.stockLevel !== undefined &&
-    updated.reorderThreshold !== undefined &&
-    updated.stockLevel < updated.reorderThreshold;
-  res.json({ ...updated, lowStockAlert: isLowStock });
+  const lowStockAlert = isLowStock(updated);
+  res.json({ ...updated, lowStockAlert });
 });
 
 // Delete a product by ID
