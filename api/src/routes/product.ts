@@ -116,7 +116,7 @@ export const resetProducts = () => {
  * Validates the stock-related fields of a product body.
  * Returns an error message string if invalid, or null if valid.
  */
-function validateStockFields(body: any): string | null {
+function validateStockFields(body: Partial<Product>): string | null {
   const { stockLevel, reorderThreshold } = body;
   if (stockLevel !== undefined) {
     if (typeof stockLevel !== 'number' || !Number.isInteger(stockLevel)) {
@@ -141,7 +141,7 @@ function validateStockFields(body: any): string | null {
 router.post('/', (req, res) => {
   const validationError = validateStockFields(req.body);
   if (validationError) {
-    res.status(400).send(validationError);
+    res.status(400).json({ error: validationError });
     return;
   }
   const newProduct: Product = req.body;
@@ -184,7 +184,7 @@ router.put('/:id', (req, res) => {
   }
   const validationError = validateStockFields(req.body);
   if (validationError) {
-    res.status(400).send(validationError);
+    res.status(400).json({ error: validationError });
     return;
   }
   products[index] = req.body;

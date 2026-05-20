@@ -3,6 +3,7 @@ import request from 'supertest';
 import express from 'express';
 import productRouter, { resetProducts } from './product';
 import { products as seedProducts } from '../seedData';
+import type { Product } from '../models/product';
 
 let app: express.Express;
 
@@ -160,7 +161,7 @@ describe('Product API', () => {
 
             const response = await request(app).get('/products/low-stock');
             expect(response.status).toBe(200);
-            const ids = response.body.map((p: any) => p.productId);
+            const ids = (response.body as Product[]).map(p => p.productId);
             expect(ids).toContain(1);
         });
 
