@@ -146,7 +146,7 @@ export function createProductRouter(initialProducts: Product[] = [...seedProduct
     }
     const newProduct: Product = req.body;
     products.push(newProduct);
-    res.status(201).json(newProduct);
+    res.status(201).json({ ...newProduct, lowStockAlert: isLowStock(newProduct) });
   });
 
   // Get all products
@@ -156,7 +156,7 @@ export function createProductRouter(initialProducts: Product[] = [...seedProduct
 
   // Get products with stock below their reorder threshold
   router.get('/low-stock', (req, res) => {
-    const lowStock = products.filter(isLowStock);
+    const lowStock = products.filter(isLowStock).map(p => ({ ...p, lowStockAlert: true }));
     res.json(lowStock);
   });
 

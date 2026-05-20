@@ -29,7 +29,8 @@ describe('Product API', () => {
         };
         const response = await request(app).post('/products').send(newProduct);
         expect(response.status).toBe(201);
-        expect(response.body).toEqual(newProduct);
+        expect(response.body).toMatchObject(newProduct);
+        expect(response.body.lowStockAlert).toBe(false);
     });
 
     it('should return 400 when creating a product with negative stockLevel', async () => {
