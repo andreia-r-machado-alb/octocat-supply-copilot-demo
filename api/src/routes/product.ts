@@ -103,52 +103,103 @@ import express from 'express';
 import { Product } from '../models/product';
 import { products as seedProducts } from '../seedData';
 
-const router = express.Router();
+const isLowStock = (p: Product): boolean =>
+  p.stockLevel !== undefined &&
+  p.reorderThreshold !== undefined &&
+  p.stockLevel < p.reorderThreshold;
 
-let products: Product[] = [...seedProducts];
-
-// Create a new product
-router.post('/', (req, res) => {
-  const newProduct: Product = req.body;
-  products.push(newProduct);
-  res.status(201).json(newProduct);
-});
-
-// Get all products
-router.get('/', (req, res) => {
-  res.json(products);
-});
-
-// Get a product by ID
-router.get('/:id', (req, res) => {
-  const product = products.find(p => p.productId === parseInt(req.params.id));
-  if (product) {
-    res.json(product);
-  } else {
-    res.status(404).send('Product not found');
+/**
+ * Validates the stock-related fields of a product body.
+ * Returns an error message string if invalid, or null if valid.
+ */
+function validateStockFields(body: Partial<Product>): string | null {
+  const { stockLevel, reorderThreshold } = body;
+  if (stockLevel !== undefined) {
+    if (typeof stockLevel !== 'number' || !Number.isInteger(stockLevel)) {
+      return 'stockLevel must be an integer';
+    }
+    if (stockLevel < 0) {
+      return 'stockLevel must be a non-negative integer';
+    }
   }
-});
+  if (reorderThreshold !== undefined) {
+    if (typeof reorderThreshold !== 'number' || !Number.isInteger(reorderThreshold)) {
+      return 'reorderThreshold must be an integer';
+    }
+    if (reorderThreshold < 1) {
+      return 'reorderThreshold must be a positive integer (>= 1)';
+    }
+  }
+  return null;
+}
 
-// Update a product by ID
-router.put('/:id', (req, res) => {
-  const index = products.findIndex(p => p.productId === parseInt(req.params.id));
-  if (index !== -1) {
+export function createProductRouter(initialProducts: Product[] = [...seedProducts]) {
+  let products = [...initialProducts];
+  const router = express.Router();
+
+  // Create a new product
+  router.post('/', (req, res) => {
+    const validationError = validateStockFields(req.body);
+    if (validationError) {
+      res.status(400).json({ error: validationError });
+      return;
+    }
+    const newProduct: Product = req.body;
+    products.push(newProduct);
+    res.status(201).json({ ...newProduct, lowStockAlert: isLowStock(newProduct) });
+  });
+
+  // Get all products
+  router.get('/', (req, res) => {
+    res.json(products.map(p => ({ ...p, lowStockAlert: isLowStock(p) })));
+  });
+
+  // Get products with stock below their reorder threshold
+  router.get('/low-stock', (req, res) => {
+    const lowStock = products.filter(isLowStock).map(p => ({ ...p, lowStockAlert: true }));
+    res.json(lowStock);
+  });
+
+  // Get a product by ID
+  router.get('/:id', (req, res) => {
+    const product = products.find(p => p.productId === parseInt(req.params.id));
+    if (!product) {
+      res.status(404).send('Product not found');
+      return;
+    }
+    res.json({ ...product, lowStockAlert: isLowStock(product) });
+  });
+
+  // Update a product by ID
+  router.put('/:id', (req, res) => {
+    const index = products.findIndex(p => p.productId === parseInt(req.params.id));
+    if (index === -1) {
+      res.status(404).send('Product not found');
+      return;
+    }
+    const validationError = validateStockFields(req.body);
+    if (validationError) {
+      res.status(400).json({ error: validationError });
+      return;
+    }
     products[index] = req.body;
-    res.json(products[index]);
-  } else {
-    res.status(404).send('Product not found');
-  }
-});
+    const updated = products[index];
+    const lowStockAlert = isLowStock(updated);
+    res.json({ ...updated, lowStockAlert });
+  });
 
-// Delete a product by ID
-router.delete('/:id', (req, res) => {
-  const index = products.findIndex(p => p.productId === parseInt(req.params.id));
-  if (index !== -1) {
-    products.splice(index, 1);
-    res.status(204).send();
-  } else {
-    res.status(404).send('Product not found');
-  }
-});
+  // Delete a product by ID
+  router.delete('/:id', (req, res) => {
+    const index = products.findIndex(p => p.productId === parseInt(req.params.id));
+    if (index !== -1) {
+      products.splice(index, 1);
+      res.status(204).send();
+    } else {
+      res.status(404).send('Product not found');
+    }
+  });
 
-export default router;
+  return router;
+}
+
+export default createProductRouter();
