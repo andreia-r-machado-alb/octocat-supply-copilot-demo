@@ -103,15 +103,6 @@ import express from 'express';
 import { Product } from '../models/product';
 import { products as seedProducts } from '../seedData';
 
-const router = express.Router();
-
-let products: Product[] = [...seedProducts];
-
-// Add reset function for testing
-export const resetProducts = () => {
-  products = [...seedProducts];
-};
-
 const isLowStock = (p: Product): boolean =>
   p.stockLevel !== undefined &&
   p.reorderThreshold !== undefined &&
@@ -142,66 +133,73 @@ function validateStockFields(body: Partial<Product>): string | null {
   return null;
 }
 
-// Create a new product
-router.post('/', (req, res) => {
-  const validationError = validateStockFields(req.body);
-  if (validationError) {
-    res.status(400).json({ error: validationError });
-    return;
-  }
-  const newProduct: Product = req.body;
-  products.push(newProduct);
-  res.status(201).json(newProduct);
-});
+export function createProductRouter(initialProducts: Product[] = [...seedProducts]) {
+  let products = [...initialProducts];
+  const router = express.Router();
 
-// Get all products
-router.get('/', (req, res) => {
-  res.json(products.map(p => ({ ...p, lowStockAlert: isLowStock(p) })));
-});
+  // Create a new product
+  router.post('/', (req, res) => {
+    const validationError = validateStockFields(req.body);
+    if (validationError) {
+      res.status(400).json({ error: validationError });
+      return;
+    }
+    const newProduct: Product = req.body;
+    products.push(newProduct);
+    res.status(201).json(newProduct);
+  });
 
-// Get products with stock below their reorder threshold
-router.get('/low-stock', (req, res) => {
-  const lowStock = products.filter(isLowStock);
-  res.json(lowStock);
-});
+  // Get all products
+  router.get('/', (req, res) => {
+    res.json(products.map(p => ({ ...p, lowStockAlert: isLowStock(p) })));
+  });
 
-// Get a product by ID
-router.get('/:id', (req, res) => {
-  const product = products.find(p => p.productId === parseInt(req.params.id));
-  if (!product) {
-    res.status(404).send('Product not found');
-    return;
-  }
-  res.json({ ...product, lowStockAlert: isLowStock(product) });
-});
+  // Get products with stock below their reorder threshold
+  router.get('/low-stock', (req, res) => {
+    const lowStock = products.filter(isLowStock);
+    res.json(lowStock);
+  });
 
-// Update a product by ID
-router.put('/:id', (req, res) => {
-  const index = products.findIndex(p => p.productId === parseInt(req.params.id));
-  if (index === -1) {
-    res.status(404).send('Product not found');
-    return;
-  }
-  const validationError = validateStockFields(req.body);
-  if (validationError) {
-    res.status(400).json({ error: validationError });
-    return;
-  }
-  products[index] = req.body;
-  const updated = products[index];
-  const lowStockAlert = isLowStock(updated);
-  res.json({ ...updated, lowStockAlert });
-});
+  // Get a product by ID
+  router.get('/:id', (req, res) => {
+    const product = products.find(p => p.productId === parseInt(req.params.id));
+    if (!product) {
+      res.status(404).send('Product not found');
+      return;
+    }
+    res.json({ ...product, lowStockAlert: isLowStock(product) });
+  });
 
-// Delete a product by ID
-router.delete('/:id', (req, res) => {
-  const index = products.findIndex(p => p.productId === parseInt(req.params.id));
-  if (index !== -1) {
-    products.splice(index, 1);
-    res.status(204).send();
-  } else {
-    res.status(404).send('Product not found');
-  }
-});
+  // Update a product by ID
+  router.put('/:id', (req, res) => {
+    const index = products.findIndex(p => p.productId === parseInt(req.params.id));
+    if (index === -1) {
+      res.status(404).send('Product not found');
+      return;
+    }
+    const validationError = validateStockFields(req.body);
+    if (validationError) {
+      res.status(400).json({ error: validationError });
+      return;
+    }
+    products[index] = req.body;
+    const updated = products[index];
+    const lowStockAlert = isLowStock(updated);
+    res.json({ ...updated, lowStockAlert });
+  });
 
-export default router;
+  // Delete a product by ID
+  router.delete('/:id', (req, res) => {
+    const index = products.findIndex(p => p.productId === parseInt(req.params.id));
+    if (index !== -1) {
+      products.splice(index, 1);
+      res.status(204).send();
+    } else {
+      res.status(404).send('Product not found');
+    }
+  });
+
+  return router;
+}
+
+export default createProductRouter();

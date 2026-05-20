@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import productRouter, { resetProducts } from './product';
+import { createProductRouter } from './product';
 import { products as seedProducts } from '../seedData';
 import type { Product } from '../models/product';
 
@@ -11,8 +11,7 @@ describe('Product API', () => {
     beforeEach(() => {
         app = express();
         app.use(express.json());
-        app.use('/products', productRouter);
-        resetProducts();
+        app.use('/products', createProductRouter([...seedProducts]));
     });
 
     it('should create a new product', async () => {
