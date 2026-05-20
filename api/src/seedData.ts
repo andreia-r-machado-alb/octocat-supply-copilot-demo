@@ -46,7 +46,9 @@ export const products: Product[] = [
         sku: "CAT-FEED-001",
         unit: "piece",
         imgName: "feeder.png",
-        discount: 0.25
+        discount: 0.25,
+        stockLevel: 50,
+        reorderThreshold: 10
     },
     {
         productId: 2,
@@ -57,7 +59,9 @@ export const products: Product[] = [
         sku: "CAT-LITTER-001",
         unit: "piece",
         imgName: "litter-box.png",
-        discount: 0.25
+        discount: 0.25,
+        stockLevel: 30,
+        reorderThreshold: 5
     },
     {
         productId: 3,
@@ -67,7 +71,9 @@ export const products: Product[] = [
         price: 89.99,
         sku: "CAT-FLIX-001",
         unit: "piece",
-        imgName: "catflix.png"
+        imgName: "catflix.png",
+        stockLevel: 20,
+        reorderThreshold: 5
     },
     {
         productId: 4,
@@ -77,7 +83,9 @@ export const products: Product[] = [
         price: 79.99,
         sku: "CAT-COLLAR-001",
         unit: "piece",
-        imgName: "smart-collar.png"
+        imgName: "smart-collar.png",
+        stockLevel: 15,
+        reorderThreshold: 10
     },
     {
         productId: 5,
@@ -87,7 +95,9 @@ export const products: Product[] = [
         price: 149.99,
         sku: "CAT-BED-001",
         unit: "piece",
-        imgName: "sleep-nest.png"
+        imgName: "sleep-nest.png",
+        stockLevel: 25,
+        reorderThreshold: 5
     },
     {
         productId: 6,
@@ -97,7 +107,9 @@ export const products: Product[] = [
         price: 119.99,
         sku: "CAT-GROOM-001",
         unit: "piece",
-        imgName: "auto-groomer.png"
+        imgName: "auto-groomer.png",
+        stockLevel: 40,
+        reorderThreshold: 8
     },
     {
         productId: 7,
@@ -108,7 +120,9 @@ export const products: Product[] = [
         sku: "CAT-FOUNTAIN-001",
         unit: "piece",
         imgName: "smart-fountain.png",
-        discount: 0.25
+        discount: 0.25,
+        stockLevel: 60,
+        reorderThreshold: 15
     },
     {
         productId: 8,
@@ -118,7 +132,9 @@ export const products: Product[] = [
         price: 59.99,
         sku: "CAT-SCRATCH-001",
         unit: "piece",
-        imgName: "scratch-pad.png"
+        imgName: "scratch-pad.png",
+        stockLevel: 35,
+        reorderThreshold: 8
     },
     {
         productId: 9,
@@ -128,7 +144,9 @@ export const products: Product[] = [
         price: 99.99,
         sku: "CAT-CAM-001",
         unit: "piece",
-        imgName: "chirp-cam.png"
+        imgName: "chirp-cam.png",
+        stockLevel: 18,
+        reorderThreshold: 5
     },
     {
         productId: 10,
@@ -139,7 +157,9 @@ export const products: Product[] = [
         sku: "CAT-SNACK-001",
         unit: "piece",
         imgName: "snack-vault.png",
-        discount: 0.25
+        discount: 0.25,
+        stockLevel: 45,
+        reorderThreshold: 10
     },
     {
         productId: 11,
@@ -149,7 +169,9 @@ export const products: Product[] = [
         price: 159.99,
         sku: "CAT-DOOR-001",
         unit: "piece",
-        imgName: "door-dash.png"
+        imgName: "door-dash.png",
+        stockLevel: 22,
+        reorderThreshold: 6
     },
     {
         productId: 12,
@@ -159,7 +181,9 @@ export const products: Product[] = [
         price: 79.99,
         sku: "CAT-TRACKER-001",
         unit: "piece",
-        imgName: "tracker-mat.png"
+        imgName: "tracker-mat.png",
+        stockLevel: 28,
+        reorderThreshold: 7
     }
 ];
 

@@ -107,6 +107,11 @@ const router = express.Router();
 
 let products: Product[] = [...seedProducts];
 
+// Add reset function for testing
+export const resetProducts = () => {
+  products = [...seedProducts];
+};
+
 // Create a new product
 router.post('/', (req, res) => {
   const newProduct: Product = req.body;
@@ -117,6 +122,17 @@ router.post('/', (req, res) => {
 // Get all products
 router.get('/', (req, res) => {
   res.json(products);
+});
+
+// Get products with stock below their reorder threshold
+router.get('/low-stock', (req, res) => {
+  const lowStock = products.filter(
+    p =>
+      p.stockLevel !== undefined &&
+      p.reorderThreshold !== undefined &&
+      p.stockLevel < p.reorderThreshold
+  );
+  res.json(lowStock);
 });
 
 // Get a product by ID
@@ -134,7 +150,12 @@ router.put('/:id', (req, res) => {
   const index = products.findIndex(p => p.productId === parseInt(req.params.id));
   if (index !== -1) {
     products[index] = req.body;
-    res.json(products[index]);
+    const updated = products[index];
+    const isLowStock =
+      updated.stockLevel !== undefined &&
+      updated.reorderThreshold !== undefined &&
+      updated.stockLevel < updated.reorderThreshold;
+    res.json({ ...updated, lowStockAlert: isLowStock });
   } else {
     res.status(404).send('Product not found');
   }
