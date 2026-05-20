@@ -112,8 +112,38 @@ export const resetProducts = () => {
   products = [...seedProducts];
 };
 
+/**
+ * Validates the stock-related fields of a product body.
+ * Returns an error message string if invalid, or null if valid.
+ */
+function validateStockFields(body: any): string | null {
+  const { stockLevel, reorderThreshold } = body;
+  if (stockLevel !== undefined) {
+    if (typeof stockLevel !== 'number' || !Number.isInteger(stockLevel)) {
+      return 'stockLevel must be an integer';
+    }
+    if (stockLevel < 0) {
+      return 'stockLevel must be a non-negative integer';
+    }
+  }
+  if (reorderThreshold !== undefined) {
+    if (typeof reorderThreshold !== 'number' || !Number.isInteger(reorderThreshold)) {
+      return 'reorderThreshold must be an integer';
+    }
+    if (reorderThreshold < 1) {
+      return 'reorderThreshold must be a positive integer (>= 1)';
+    }
+  }
+  return null;
+}
+
 // Create a new product
 router.post('/', (req, res) => {
+  const validationError = validateStockFields(req.body);
+  if (validationError) {
+    res.status(400).send(validationError);
+    return;
+  }
   const newProduct: Product = req.body;
   products.push(newProduct);
   res.status(201).json(newProduct);
@@ -148,17 +178,22 @@ router.get('/:id', (req, res) => {
 // Update a product by ID
 router.put('/:id', (req, res) => {
   const index = products.findIndex(p => p.productId === parseInt(req.params.id));
-  if (index !== -1) {
-    products[index] = req.body;
-    const updated = products[index];
-    const isLowStock =
-      updated.stockLevel !== undefined &&
-      updated.reorderThreshold !== undefined &&
-      updated.stockLevel < updated.reorderThreshold;
-    res.json({ ...updated, lowStockAlert: isLowStock });
-  } else {
+  if (index === -1) {
     res.status(404).send('Product not found');
+    return;
   }
+  const validationError = validateStockFields(req.body);
+  if (validationError) {
+    res.status(400).send(validationError);
+    return;
+  }
+  products[index] = req.body;
+  const updated = products[index];
+  const isLowStock =
+    updated.stockLevel !== undefined &&
+    updated.reorderThreshold !== undefined &&
+    updated.stockLevel < updated.reorderThreshold;
+  res.json({ ...updated, lowStockAlert: isLowStock });
 });
 
 // Delete a product by ID

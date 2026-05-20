@@ -32,6 +32,36 @@ describe('Product API', () => {
         expect(response.body).toEqual(newProduct);
     });
 
+    it('should return 400 when creating a product with negative stockLevel', async () => {
+        const newProduct = {
+            productId: 99, supplierId: 1, name: "Bad Product", description: "",
+            price: 9.99, sku: "BAD-001", unit: "piece", imgName: "bad.png",
+            stockLevel: -1, reorderThreshold: 10
+        };
+        const response = await request(app).post('/products').send(newProduct);
+        expect(response.status).toBe(400);
+    });
+
+    it('should return 400 when creating a product with a non-numeric stockLevel', async () => {
+        const newProduct = {
+            productId: 99, supplierId: 1, name: "Bad Product", description: "",
+            price: 9.99, sku: "BAD-001", unit: "piece", imgName: "bad.png",
+            stockLevel: 'lots', reorderThreshold: 10
+        };
+        const response = await request(app).post('/products').send(newProduct);
+        expect(response.status).toBe(400);
+    });
+
+    it('should return 400 when creating a product with reorderThreshold of zero', async () => {
+        const newProduct = {
+            productId: 99, supplierId: 1, name: "Bad Product", description: "",
+            price: 9.99, sku: "BAD-001", unit: "piece", imgName: "bad.png",
+            stockLevel: 10, reorderThreshold: 0
+        };
+        const response = await request(app).post('/products').send(newProduct);
+        expect(response.status).toBe(400);
+    });
+
     it('should get all products', async () => {
         const response = await request(app).get('/products');
         expect(response.status).toBe(200);
@@ -88,6 +118,36 @@ describe('Product API', () => {
             const response = await request(app).put('/products/1').send(updated);
             expect(response.status).toBe(200);
             expect(response.body.lowStockAlert).toBe(false);
+        });
+
+        it('should return 400 when stockLevel is negative', async () => {
+            const updated = { ...seedProducts[0], stockLevel: -1, reorderThreshold: 10 };
+            const response = await request(app).put('/products/1').send(updated);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when stockLevel is a non-numeric string', async () => {
+            const updated = { ...seedProducts[0], stockLevel: 'lots', reorderThreshold: 10 };
+            const response = await request(app).put('/products/1').send(updated);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when reorderThreshold is zero', async () => {
+            const updated = { ...seedProducts[0], stockLevel: 5, reorderThreshold: 0 };
+            const response = await request(app).put('/products/1').send(updated);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when reorderThreshold is negative', async () => {
+            const updated = { ...seedProducts[0], stockLevel: 5, reorderThreshold: -5 };
+            const response = await request(app).put('/products/1').send(updated);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when reorderThreshold is a non-numeric string', async () => {
+            const updated = { ...seedProducts[0], stockLevel: 5, reorderThreshold: 'many' };
+            const response = await request(app).put('/products/1').send(updated);
+            expect(response.status).toBe(400);
         });
     });
 
