@@ -156,7 +156,7 @@ router.post('/', (req, res) => {
 
 // Get all products
 router.get('/', (req, res) => {
-  res.json(products);
+  res.json(products.map(p => ({ ...p, lowStockAlert: isLowStock(p) })));
 });
 
 // Get products with stock below their reorder threshold
@@ -168,11 +168,11 @@ router.get('/low-stock', (req, res) => {
 // Get a product by ID
 router.get('/:id', (req, res) => {
   const product = products.find(p => p.productId === parseInt(req.params.id));
-  if (product) {
-    res.json(product);
-  } else {
+  if (!product) {
     res.status(404).send('Product not found');
+    return;
   }
+  res.json({ ...product, lowStockAlert: isLowStock(product) });
 });
 
 // Update a product by ID

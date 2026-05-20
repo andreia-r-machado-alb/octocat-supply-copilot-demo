@@ -67,12 +67,14 @@ describe('Product API', () => {
         const response = await request(app).get('/products');
         expect(response.status).toBe(200);
         expect(response.body.length).toBe(seedProducts.length);
+        expect(response.body[0]).toHaveProperty('lowStockAlert');
     });
 
     it('should get a product by ID', async () => {
         const response = await request(app).get('/products/1');
         expect(response.status).toBe(200);
         expect(response.body.productId).toBe(1);
+        expect(response.body).toHaveProperty('lowStockAlert');
     });
 
     it('should return 404 for non-existing product', async () => {
