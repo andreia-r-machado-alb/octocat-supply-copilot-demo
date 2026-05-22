@@ -101,11 +101,9 @@
 
 import express from 'express';
 import { Order } from '../models/order';
-import { orders as seedOrders } from '../seedData';
+import { orderDetails, orders, products } from '../state/dataStore';
 
 const router = express.Router();
-
-let orders: Order[] = [...seedOrders];
 
 // Create a new order
 router.post('/', (req, res) => {
@@ -131,9 +129,65 @@ router.get('/:id', (req, res) => {
 
 // Update an order by ID
 router.put('/:id', (req, res) => {
-  const index = orders.findIndex(o => o.orderId === parseInt(req.params.id));
+  const index = orders.findIndex(o => o.orderId === parseInt(req.params.id, 10));
   if (index !== -1) {
-    orders[index] = req.body;
+    const currentOrder = orders[index];
+    const updatedOrder: Order = req.body;
+
+    if (currentOrder.status === 'pending' && updatedOrder.status === 'processing') {
+      const detailsForOrder = orderDetails.filter(detail => detail.orderId === currentOrder.orderId);
+
+      for (const detail of detailsForOrder) {
+        const product = products.find(p => p.productId === detail.productId);
+        if (!product) {
+          res.status(422).json({
+            error: 'Cannot confirm order because one or more products do not exist',
+            productId: detail.productId
+          });
+          return;
+        }
+
+        if (product.stockLevel < detail.quantity) {
+          res.status(422).json({
+            error: 'Insufficient stock to confirm order',
+            productId: detail.productId,
+            requested: detail.quantity,
+            available: product.stockLevel
+          });
+          return;
+        }
+      }
+
+      for (const detail of detailsForOrder) {
+        const product = products.find(p => p.productId === detail.productId);
+        if (product) {
+          product.stockLevel -= detail.quantity;
+        }
+      }
+    }
+
+    if (currentOrder.status === 'processing' && updatedOrder.status === 'cancelled') {
+      const detailsForOrder = orderDetails.filter(detail => detail.orderId === currentOrder.orderId);
+      for (const detail of detailsForOrder) {
+        const product = products.find(p => p.productId === detail.productId);
+        if (!product) {
+          res.status(422).json({
+            error: 'Cannot restore stock because one or more products do not exist',
+            productId: detail.productId
+          });
+          return;
+        }
+      }
+
+      for (const detail of detailsForOrder) {
+        const product = products.find(p => p.productId === detail.productId);
+        if (product) {
+        product.stockLevel += detail.quantity;
+        }
+      }
+    }
+
+    orders[index] = updatedOrder;
     res.json(orders[index]);
   } else {
     res.status(404).send('Order not found');
