@@ -101,14 +101,26 @@
 
 import express from 'express';
 import { Order } from '../models/order';
-import { orders as seedOrders } from '../seedData';
+import { getOrders } from '../state/dataStore';
+import { cancelOrderTransactional } from '../services/orderCancellationService';
+import { confirmOrderAndDeductStock } from '../services/orderInventoryService';
+import { ServiceError } from '../services/types';
 
 const router = express.Router();
 
-let orders: Order[] = [...seedOrders];
+function sendServiceError(res: express.Response, error: ServiceError): void {
+  res.status(error.status).json({
+    error: {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+    },
+  });
+}
 
 // Create a new order
 router.post('/', (req, res) => {
+  const orders = getOrders();
   const newOrder: Order = req.body;
   orders.push(newOrder);
   res.status(201).json(newOrder);
@@ -116,11 +128,13 @@ router.post('/', (req, res) => {
 
 // Get all orders
 router.get('/', (req, res) => {
+  const orders = getOrders();
   res.json(orders);
 });
 
 // Get an order by ID
 router.get('/:id', (req, res) => {
+  const orders = getOrders();
   const order = orders.find(o => o.orderId === parseInt(req.params.id));
   if (order) {
     res.json(order);
@@ -130,18 +144,76 @@ router.get('/:id', (req, res) => {
 });
 
 // Update an order by ID
-router.put('/:id', (req, res) => {
-  const index = orders.findIndex(o => o.orderId === parseInt(req.params.id));
-  if (index !== -1) {
-    orders[index] = req.body;
-    res.json(orders[index]);
-  } else {
+router.put('/:id', async (req, res) => {
+  const orders = getOrders();
+  const id = parseInt(req.params.id);
+  const index = orders.findIndex(o => o.orderId === id);
+
+  if (index === -1) {
     res.status(404).send('Order not found');
+    return;
   }
+
+  const currentOrder = orders[index];
+  const updatedOrder: Order = req.body;
+
+  if (
+    updatedOrder.status === 'processing' &&
+    currentOrder.status !== 'processing'
+  ) {
+    const confirmationResult = await confirmOrderAndDeductStock(id);
+    if (!confirmationResult.ok) {
+      sendServiceError(res, confirmationResult.error);
+      return;
+    }
+
+    res.json(confirmationResult.data.order);
+    return;
+  }
+
+  if (
+    updatedOrder.status === 'cancelled' &&
+    currentOrder.status !== 'cancelled'
+  ) {
+    res.status(409).json({
+      error: {
+        code: 'STATE_CONFLICT',
+        message: 'Use POST /api/orders/:id/cancel for cancellation operations.',
+        details: {
+          orderId: id,
+          currentStatus: currentOrder.status,
+        },
+      },
+    });
+    return;
+  }
+
+  orders[index] = updatedOrder;
+  res.json(orders[index]);
+});
+
+router.post('/:id/cancel', async (req, res) => {
+  const id = parseInt(req.params.id);
+  const cancellationResult = await cancelOrderTransactional({
+    orderId: id,
+    reason: req.body?.reason,
+    cancelledBy: req.body?.cancelledBy,
+    idempotencyKey: req.body?.idempotencyKey,
+    correlationId: req.body?.correlationId,
+    deliveredSummary: req.body?.deliveredSummary,
+  });
+
+  if (!cancellationResult.ok) {
+    sendServiceError(res, cancellationResult.error);
+    return;
+  }
+
+  res.json(cancellationResult.data);
 });
 
 // Delete an order by ID
 router.delete('/:id', (req, res) => {
+  const orders = getOrders();
   const index = orders.findIndex(o => o.orderId === parseInt(req.params.id));
   if (index !== -1) {
     orders.splice(index, 1);

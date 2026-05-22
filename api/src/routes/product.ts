@@ -101,14 +101,13 @@
 
 import express from 'express';
 import { Product } from '../models/product';
-import { products as seedProducts } from '../seedData';
+import { getProducts } from '../state/dataStore';
 
 const router = express.Router();
 
-let products: Product[] = [...seedProducts];
-
 // Create a new product
 router.post('/', (req, res) => {
+  const products = getProducts();
   const newProduct: Product = req.body;
   products.push(newProduct);
   res.status(201).json(newProduct);
@@ -116,11 +115,13 @@ router.post('/', (req, res) => {
 
 // Get all products
 router.get('/', (req, res) => {
+  const products = getProducts();
   res.json(products);
 });
 
 // Get a product by ID
 router.get('/:id', (req, res) => {
+  const products = getProducts();
   const product = products.find(p => p.productId === parseInt(req.params.id));
   if (product) {
     res.json(product);
@@ -131,6 +132,7 @@ router.get('/:id', (req, res) => {
 
 // Update a product by ID
 router.put('/:id', (req, res) => {
+  const products = getProducts();
   const index = products.findIndex(p => p.productId === parseInt(req.params.id));
   if (index !== -1) {
     products[index] = req.body;
@@ -142,6 +144,7 @@ router.put('/:id', (req, res) => {
 
 // Delete a product by ID
 router.delete('/:id', (req, res) => {
+  const products = getProducts();
   const index = products.findIndex(p => p.productId === parseInt(req.params.id));
   if (index !== -1) {
     products.splice(index, 1);
