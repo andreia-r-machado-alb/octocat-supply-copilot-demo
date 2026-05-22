@@ -45,6 +45,7 @@ export const products: Product[] = [
         price: 129.99,
         sku: "CAT-FEED-001",
         unit: "piece",
+        stockLevel: 40,
         imgName: "feeder.png",
         discount: 0.25
     },
@@ -56,6 +57,7 @@ export const products: Product[] = [
         price: 199.99,
         sku: "CAT-LITTER-001",
         unit: "piece",
+        stockLevel: 30,
         imgName: "litter-box.png",
         discount: 0.25
     },
@@ -67,6 +69,7 @@ export const products: Product[] = [
         price: 89.99,
         sku: "CAT-FLIX-001",
         unit: "piece",
+        stockLevel: 60,
         imgName: "catflix.png"
     },
     {
@@ -77,6 +80,7 @@ export const products: Product[] = [
         price: 79.99,
         sku: "CAT-COLLAR-001",
         unit: "piece",
+        stockLevel: 75,
         imgName: "smart-collar.png"
     },
     {
@@ -87,6 +91,7 @@ export const products: Product[] = [
         price: 149.99,
         sku: "CAT-BED-001",
         unit: "piece",
+        stockLevel: 35,
         imgName: "sleep-nest.png"
     },
     {
@@ -97,6 +102,7 @@ export const products: Product[] = [
         price: 119.99,
         sku: "CAT-GROOM-001",
         unit: "piece",
+        stockLevel: 45,
         imgName: "auto-groomer.png"
     },
     {
@@ -107,6 +113,7 @@ export const products: Product[] = [
         price: 69.99,
         sku: "CAT-FOUNTAIN-001",
         unit: "piece",
+        stockLevel: 90,
         imgName: "smart-fountain.png",
         discount: 0.25
     },
@@ -118,6 +125,7 @@ export const products: Product[] = [
         price: 59.99,
         sku: "CAT-SCRATCH-001",
         unit: "piece",
+        stockLevel: 55,
         imgName: "scratch-pad.png"
     },
     {
@@ -128,6 +136,7 @@ export const products: Product[] = [
         price: 99.99,
         sku: "CAT-CAM-001",
         unit: "piece",
+        stockLevel: 50,
         imgName: "chirp-cam.png"
     },
     {
@@ -138,6 +147,7 @@ export const products: Product[] = [
         price: 49.99,
         sku: "CAT-SNACK-001",
         unit: "piece",
+        stockLevel: 80,
         imgName: "snack-vault.png",
         discount: 0.25
     },
@@ -149,6 +159,7 @@ export const products: Product[] = [
         price: 159.99,
         sku: "CAT-DOOR-001",
         unit: "piece",
+        stockLevel: 25,
         imgName: "door-dash.png"
     },
     {
@@ -159,6 +170,7 @@ export const products: Product[] = [
         price: 79.99,
         sku: "CAT-TRACKER-001",
         unit: "piece",
+        stockLevel: 70,
         imgName: "tracker-mat.png"
     }
 ];

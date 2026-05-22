@@ -41,6 +41,8 @@ export interface Product {
     price: number;
     sku: string;
     unit: string;
+    stockLevel: number;
     imgName: string;
+    inventoryVersion?: number;
     discount?: number;
 }
