@@ -155,11 +155,25 @@ router.put('/:id', (req, res) => {
   const index = products.findIndex(p => p.productId === parseInt(req.params.id));
   if (index !== -1) {
     const previousProduct = products[index];
-    products[index] = req.body;
+    const updatedProduct: Product = {
+      productId: previousProduct.productId,
+      supplierId: req.body.supplierId ?? previousProduct.supplierId,
+      name: req.body.name ?? previousProduct.name,
+      description: req.body.description ?? previousProduct.description,
+      price: req.body.price ?? previousProduct.price,
+      sku: req.body.sku ?? previousProduct.sku,
+      unit: req.body.unit ?? previousProduct.unit,
+      imgName: req.body.imgName ?? previousProduct.imgName,
+      discount: req.body.discount ?? previousProduct.discount,
+      quantity: req.body.quantity ?? previousProduct.quantity,
+      reorder_threshold: req.body.reorder_threshold ?? previousProduct.reorder_threshold
+    };
+
+    products[index] = updatedProduct;
 
     if (shouldEmitLowStockAlert(previousProduct, products[index])) {
       productEvents.emit(LOW_STOCK_ALERT_EVENT, {
-        productId: products[index].productId,
+        productId: previousProduct.productId,
         quantity: products[index].quantity,
         reorder_threshold: products[index].reorder_threshold
       });
