@@ -42,5 +42,7 @@ export interface Product {
     sku: string;
     unit: string;
     imgName: string;
+    quantity?: number;
+    reorder_threshold?: number;
     discount?: number;
 }
