@@ -101,11 +101,9 @@
 
 import express from 'express';
 import { OrderDetail } from '../models/orderDetail';
-import { orderDetails as seedOrderDetails } from '../seedData';
+import { orderDetails } from '../state/dataStore';
 
 const router = express.Router();
-
-let orderDetails: OrderDetail[] = [...seedOrderDetails];
 
 // Create a new order detail
 router.post('/', (req, res) => {

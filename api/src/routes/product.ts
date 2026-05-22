@@ -101,11 +101,9 @@
 
 import express from 'express';
 import { Product } from '../models/product';
-import { products as seedProducts } from '../seedData';
+import { products } from '../state/dataStore';
 
 const router = express.Router();
-
-let products: Product[] = [...seedProducts];
 
 // Create a new product
 router.post('/', (req, res) => {
