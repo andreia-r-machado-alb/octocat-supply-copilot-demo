@@ -171,11 +171,11 @@ router.put('/:id', (req, res) => {
 
     products[index] = updatedProduct;
 
-    if (shouldEmitLowStockAlert(previousProduct, products[index])) {
+    if (shouldEmitLowStockAlert(previousProduct, updatedProduct)) {
       productEvents.emit(LOW_STOCK_ALERT_EVENT, {
         productId: previousProduct.productId,
-        quantity: products[index].quantity,
-        reorder_threshold: products[index].reorder_threshold
+        quantity: updatedProduct.quantity,
+        reorder_threshold: updatedProduct.reorder_threshold
       });
     }
 
