@@ -3,12 +3,16 @@ import { Order } from '../models/order';
 import { OrderDetail } from '../models/orderDetail';
 import { Product } from '../models/product';
 
-export let orders: Order[] = [...seedOrders];
-export let orderDetails: OrderDetail[] = [...seedOrderDetails];
-export let products: Product[] = [...seedProducts];
+const cloneOrders = (): Order[] => seedOrders.map(order => ({ ...order }));
+const cloneOrderDetails = (): OrderDetail[] => seedOrderDetails.map(orderDetail => ({ ...orderDetail }));
+const cloneProducts = (): Product[] => seedProducts.map(product => ({ ...product }));
+
+export let orders: Order[] = cloneOrders();
+export let orderDetails: OrderDetail[] = cloneOrderDetails();
+export let products: Product[] = cloneProducts();
 
 export const resetDataStore = () => {
-  orders = [...seedOrders];
-  orderDetails = [...seedOrderDetails];
-  products = [...seedProducts];
+  orders = cloneOrders();
+  orderDetails = cloneOrderDetails();
+  products = cloneProducts();
 };
