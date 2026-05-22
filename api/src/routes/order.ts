@@ -177,8 +177,13 @@ router.put('/:id', (req, res) => {
           });
           return;
         }
+      }
 
+      for (const detail of detailsForOrder) {
+        const product = products.find(p => p.productId === detail.productId);
+        if (product) {
         product.stockLevel += detail.quantity;
+        }
       }
     }
 
